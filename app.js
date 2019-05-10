@@ -4,30 +4,42 @@ const url = require('url');
 const StringDecoder = require('string_decoder').StringDecoder;
 const fs = require('fs');
 
-
-const confing = require('./config');
-
+const handlers = require('./lib/handlers');
+const confing = require('./lib/config');
+const helpers = require('./lib/helpers');
 
 const httpServer = http.createServer(function(req, res) {
-    combinedServer(req,res);
+  combinedServer(req, res);
 });
 httpServer.listen(confing.httpPort, function() {
-  console.log('The server is listening in Port '+confing.httpPort+' in '+confing.envName+' mode');
+  console.log(
+    'The server is listening in Port ' +
+      confing.httpPort +
+      ' in ' +
+      confing.envName +
+      ' mode'
+  );
 });
 
 var httpsServerOptions = {
-    'key': fs.readFileSync('./https/key.pem'),
-    'cert': fs.readFileSync('./https/cert.pem')
+  key: fs.readFileSync('./https/key.pem'),
+  cert: fs.readFileSync('./https/cert.pem')
 };
-const httpsServer = https.createServer(httpsServerOptions,function(req, res) {
-    combinedServer(req,res);
+const httpsServer = https.createServer(httpsServerOptions, function(req, res) {
+  combinedServer(req, res);
 });
 httpsServer.listen(confing.httpsPort, function() {
-  console.log('The server is listening in Port '+confing.httpsPort+' in '+confing.envName+' mode');
+  console.log(
+    'The server is listening in Port ' +
+      confing.httpsPort +
+      ' in ' +
+      confing.envName +
+      ' mode'
+  );
 });
 
-var combinedServer = function(req,res){
-    const parseUrl = url.parse(req.url, true);
+var combinedServer = function(req, res) {
+  const parseUrl = url.parse(req.url, true);
 
   const path = parseUrl.pathname;
   const trimPath = path.replace(/^\/+|\/+$/g, '');
@@ -51,7 +63,7 @@ var combinedServer = function(req,res){
     var data = {
       trimPath: trimPath,
       queryStringObject: queryStringObject,
-      payload: buffer,
+      payload: helpers.parseJsonToObject(buffer),
       method: method,
       headers: headers
     };
@@ -66,19 +78,10 @@ var combinedServer = function(req,res){
       res.end(payloadString);
       console.log('These are the responses ', statusCode, payloadString);
     });
-
   });
 
-var handlers = {};
-handlers.ping= function(data, callback) {
-  callback(200, {'Admin': 'Pinging'});
-};
-
-handlers.NotFound = function(data, callback) {
-  callback(404);
-};
-var router = {
-  ping: handlers.ping
-};
-
+  var router = {
+    ping: handlers.ping,
+    user: handlers.users
+  };
 };
