@@ -82,6 +82,8 @@ var combinedServer = function(req, res) {
 
   var router = {
     ping: handlers.ping,
-    user: handlers.users
+    user: handlers.users,
+    tokens: handlers.tokens
+
   };
 };
